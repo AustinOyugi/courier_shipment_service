@@ -90,7 +90,7 @@ public class AdminHome extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(getContext(),"error on cancelled",Toast.LENGTH_LONG).show();
             }
         });
     }

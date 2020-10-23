@@ -104,25 +104,38 @@ public class MainActivity extends AppCompatActivity {
 
     // Checker
     private boolean isServicesOk() {
-        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.instance);
+        int available = GoogleApiAvailability.getInstance()
+                .isGooglePlayServicesAvailable(MainActivity.instance);
 
         if (available == ConnectionResult.SUCCESS) {
+            Toast.makeText(MainActivity.instance, "You can now make map request!"
+                    , Toast.LENGTH_SHORT).show();
             return true;
         } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
-            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainActivity.instance, available, ERROR_DIALOG_REQUEST);
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainActivity.instance
+                    , available, ERROR_DIALOG_REQUEST);
             dialog.show();
         }
 
-        Toast.makeText(MainActivity.instance, "You can't make map request!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.instance, "You can't make map request!"
+                , Toast.LENGTH_SHORT).show();
         return false;
     }
 
     private boolean checkPermission() {
-        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION
+                , Manifest.permission.ACCESS_FINE_LOCATION};
 
-        if (ActivityCompat.checkSelfPermission(MainActivity.instance, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(MainActivity.instance, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.instance, permissions, LOCATION_PERMISSION_CODE);
+        if (ActivityCompat
+                .checkSelfPermission(MainActivity.instance
+                        , Manifest
+                                .permission
+                                .ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(MainActivity.instance
+                        , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager
+                        .PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.instance, permissions
+                    , LOCATION_PERMISSION_CODE);
         } else {
             return true;
         }
@@ -143,7 +156,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final int margin = dip;
-        CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
+        CoordinatorLayout.LayoutParams layoutParams =
+                (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
         layoutParams.setMargins(margin, margin, margin, margin);
         appBarLayout.setLayoutParams(layoutParams);
 
@@ -157,7 +171,8 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void loadNavFragment(String title, int marginSize, int container, Fragment fragment, String tag) {
+    private void loadNavFragment(String title, int marginSize, int container, Fragment fragment
+            , String tag) {
         getSupportActionBar().setTitle(title);
         loadToolbarPosition(marginSize);
         AppFragmentManager.replace(MainActivity.instance, container, fragment, tag);
@@ -172,20 +187,26 @@ public class MainActivity extends AppCompatActivity {
         map.put(AFModel.state, AFModel.val_state_offline);
 
         @SuppressLint("HardwareIds")
-        final String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID, Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
-        Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase.getCurrentUserId()).child(deviceId).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+        final String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID
+                , Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
+        Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase.getCurrentUserId())
+                .child(deviceId).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     DatabaseReference notificationTokenReference =
-                            Vars.appFirebase.getDbNotificationsReference().child(AFModel.tokens).child(Vars.appFirebase.getCurrentUserId()).child(deviceId);
+                            Vars.appFirebase.getDbNotificationsReference().child(AFModel.tokens)
+                                    .child(Vars.appFirebase.getCurrentUserId()).child(deviceId);
                     notificationTokenReference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                Toast.makeText(instance, "You are now offline!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(instance, "You are now offline!"
+                                        , Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(MainActivity.instance, "Can't recive notification.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.instance
+                                        , "Can't recive notification."
+                                        , Toast.LENGTH_SHORT).show();
                             }
 
                             Vars.appFirebase.signOutUser();
@@ -195,7 +216,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    Log.d(Vars.APPTAG, "ExceptionCallback: " + Objects.requireNonNull(task.getException()).getMessage());
+                    Log.d(Vars.APPTAG, "ExceptionCallback: " +
+                            Objects.requireNonNull(task.getException()).getMessage());
                 }
             }
         });
@@ -217,51 +239,69 @@ public class MainActivity extends AppCompatActivity {
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
                     @SuppressLint("HardwareIds")
-                    String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID, Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
+                    String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID
+                            , Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
                     Map<String, Object> statusMap = new HashMap<>();
                     statusMap.put(AFModel.latitude, latLng.latitude);
                     statusMap.put(AFModel.longitude, latLng.longitude);
                     statusMap.put(AFModel.device_name, Build.MODEL);
                     statusMap.put(AFModel.state, AFModel.val_state_online);
 
-                    Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase.getCurrentUserId()).child(deviceId)
+                    Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase
+                            .getCurrentUserId()).child(deviceId)
                             .setValue(statusMap)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         @SuppressLint("HardwareIds")
-                                        String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID, Secure.getString(MainActivity.instance.getContentResolver(), Secure.ANDROID_ID));
-                                        String tokenId = FirebaseInstanceId.getInstance().getToken();
+                                        String deviceId = Vars.localDB.retriveStringValue(
+                                                Vars.PREFS_DEVICE_UNIQUE_ID, Secure
+                                                        .getString(MainActivity
+                                                                .instance.getContentResolver()
+                                                                , Secure.ANDROID_ID));
+                                        String tokenId = FirebaseInstanceId.getInstance()
+                                                .getToken();
 
                                         Map<String, Object> tokenMap = new HashMap<>();
                                         tokenMap.put(AFModel.token_id, tokenId);
                                         DatabaseReference notificationTokenReference =
-                                                Vars.appFirebase.getDbNotificationsReference().child(AFModel.tokens).child(Vars.appFirebase.getCurrentUserId()).child(deviceId);
-                                        notificationTokenReference.setValue(tokenMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                Vars.appFirebase.getDbNotificationsReference()
+                                                        .child(AFModel.tokens)
+                                                        .child(Vars.appFirebase.getCurrentUserId())
+                                                        .child(deviceId);
+                                        notificationTokenReference.setValue(tokenMap)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (!task.isSuccessful()) {
-                                                    Toast.makeText(MainActivity.instance, "Can't recive notification.", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(MainActivity.instance
+                                                            , "Can't recive notification."
+                                                            , Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         });
                                     } else {
-                                        Toast.makeText(MainActivity.instance, "Location couldn't save.", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.instance
+                                                , "Location couldn't save."
+                                                , Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
 
                 } else {
                     Log.d(Vars.APPTAG, "getDeviceLocation: no location found.");
-                    Toast.makeText(MainActivity.instance, "Unable to get location!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.instance, "Unable to get location!"
+                            , Toast.LENGTH_SHORT).show();
                 }
             }
         };
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.instance);
+        fusedLocationProviderClient = LocationServices
+                .getFusedLocationProviderClient(MainActivity.instance);
         if (checkPermission()) {
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest
+                    , locationCallback, Looper.myLooper());
         }
     }
 
@@ -274,7 +314,9 @@ public class MainActivity extends AppCompatActivity {
         final AlertDialog spotDialog = new SpotsDialog(instance, "Loading User Info...");
         spotDialog.show();
 
-        DatabaseReference reference = Vars.appFirebase.getDbReference().child(AFModel.users).child(clild).child(Vars.appFirebase.getCurrentUser().getUid());
+        DatabaseReference reference = Vars.appFirebase.getDbReference()
+                .child(AFModel.users).child(clild).child(Vars.appFirebase
+                        .getCurrentUser().getUid());
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -331,7 +373,8 @@ public class MainActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.navigationView);
 
         setSupportActionBar(toolbar);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(instance, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(instance, drawerLayout, toolbar
+                , R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -366,19 +409,26 @@ public class MainActivity extends AppCompatActivity {
                         if (Vars.isUserAdmin) {
                             switch (menuItem.getItemId()) {
                                 case R.id.homeANI: {
-                                    loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE, AppFragmentManager.fragmentMapContainer, new AdminHome(), AdminHome.TAG);
+                                    loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE
+                                            , AppFragmentManager.fragmentMapContainer
+                                            , new AdminHome(), AdminHome.TAG);
                                     break;
                                 }
                                 case R.id.employeesANI: {
-                                    loadNavFragment("Employees",0, AppFragmentManager.fragmentContainer, new AdminEmployees(), AdminEmployees.TAG);
+                                    loadNavFragment("Employees",0
+                                            , AppFragmentManager.fragmentContainer
+                                            , new AdminEmployees(), AdminEmployees.TAG);
                                     break;
                                 }
                                 case R.id.worksANI: {
-                                    loadNavFragment("Works",0, AppFragmentManager.fragmentContainer, new AdminWorks(), AdminWorks.TAG);
+                                    loadNavFragment("Works",0, AppFragmentManager
+                                            .fragmentContainer, new AdminWorks(), AdminWorks.TAG);
                                     break;
                                 }
                                 case R.id.profileANI: {
-                                    loadNavFragment("Profile",0, AppFragmentManager.fragmentContainer, new AdminProfile(), AdminProfile.TAG);
+                                    loadNavFragment("Profile",0
+                                            , AppFragmentManager.fragmentContainer
+                                            , new AdminProfile(), AdminProfile.TAG);
                                     break;
                                 }
                                 case R.id.signOutANI: {
@@ -389,15 +439,21 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             switch (menuItem.getItemId()) {
                                 case R.id.worksCNI: {
-                                    loadNavFragment("Works", 0, AppFragmentManager.fragmentContainer, new EmployeeWorks(), EmployeeWorks.TAG);
+                                    loadNavFragment("Works", 0
+                                            , AppFragmentManager.fragmentContainer
+                                            , new EmployeeWorks(), EmployeeWorks.TAG);
                                     break;
                                 }
                                 case R.id.mapCNI: {
-                                    loadNavFragment("Map", 15, AppFragmentManager.fragmentMapContainer, new EmployeeHome(), EmployeeHome.TAG);
+                                    loadNavFragment("Map", 15
+                                            , AppFragmentManager.fragmentMapContainer
+                                            , new EmployeeHome(), EmployeeHome.TAG);
                                     break;
                                 }
                                 case R.id.profileCNI: {
-                                    loadNavFragment("Profile", 0, AppFragmentManager.fragmentContainer, new EmployeeProfile(), EmployeeProfile.TAG);
+                                    loadNavFragment("Profile", 0
+                                            , AppFragmentManager.fragmentContainer
+                                            , new EmployeeProfile(), EmployeeProfile.TAG);
                                     break;
                                 }
                                 case R.id.signOutCNI: {
@@ -415,23 +471,30 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             if (Vars.isUserAdmin) {
-                loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE, AppFragmentManager.fragmentMapContainer, new AdminHome(), AdminHome.TAG);
+                loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE
+                        , AppFragmentManager.fragmentMapContainer, new AdminHome(), AdminHome.TAG);
                 navigationView.setCheckedItem(R.id.homeANI);
             } else {
-                loadNavFragment("Works", 0, AppFragmentManager.fragmentContainer, new EmployeeWorks(), EmployeeWorks.TAG);
+                loadNavFragment("Works", 0
+                        , AppFragmentManager.fragmentContainer, new EmployeeWorks()
+                        , EmployeeWorks.TAG);
                 navigationView.setCheckedItem(R.id.worksCNI);
             }
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions
+            , @NonNull int[] grantResults) {
         switch (requestCode) {
             case LOCATION_PERMISSION_CODE: {
                 if (grantResults.length > 0) {
                     for (int result : grantResults) {
                         if (result != PackageManager.PERMISSION_GRANTED) {
-                            Vars.appDialog.create(MainActivity.instance, "Permission", "I need password to get your current location. I don't harm any of your private data and other stuff.",
+                            Vars.appDialog.create(MainActivity.instance, "Permission"
+                                    , "I need password to get your current location." +
+                                            " I don't harm any of your private data and " +
+                                            "other stuff.",
                                     "Yes", "No", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -466,18 +529,23 @@ public class MainActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else if (Vars.currentFragment.getTag().equals(AdminEmployeeWorks.TAG)) {
-            AppFragmentManager.replace(MainActivity.instance, AppFragmentManager.fragmentContainer, new AdminWorks(), AdminWorks.TAG);
+            AppFragmentManager.replace(MainActivity.instance, AppFragmentManager.fragmentContainer
+                    , new AdminWorks(), AdminWorks.TAG);
         } else if (Vars.currentFragment.getTag().equals(AdminProfileEdit.TAG)) {
-            loadNavFragment("Profile",0, AppFragmentManager.fragmentContainer, new AdminProfile(), AdminProfile.TAG);
+            loadNavFragment("Profile",0, AppFragmentManager.fragmentContainer
+                    , new AdminProfile(), AdminProfile.TAG);
         } else if (Vars.currentFragment.getTag().equals(EmployeeProfileEdit.TAG)) {
-            loadNavFragment("Profile",0, AppFragmentManager.fragmentContainer, new EmployeeProfile(), EmployeeProfile.TAG);
+            loadNavFragment("Profile",0, AppFragmentManager.fragmentContainer
+                    , new EmployeeProfile(), EmployeeProfile.TAG);
         } else if (!Vars.currentFragment.getTag().equals(AdminHome.TAG) && Vars.isUserAdmin) {
-            loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE, AppFragmentManager.fragmentMapContainer, new AdminHome(), AdminHome.TAG);
+            loadNavFragment("Courier Service", TOOLBAR_MARGIN_SIZE
+                    , AppFragmentManager.fragmentMapContainer, new AdminHome(), AdminHome.TAG);
             navigationView.setCheckedItem(R.id.homeANI);
         }
 
         else if (!Vars.currentFragment.getTag().equals(EmployeeWorks.TAG) && !Vars.isUserAdmin) {
-            loadNavFragment("Works", 0, AppFragmentManager.fragmentContainer, new EmployeeWorks(), EmployeeWorks.TAG);
+            loadNavFragment("Works", 0, AppFragmentManager.fragmentContainer
+                    , new EmployeeWorks(), EmployeeWorks.TAG);
             navigationView.setCheckedItem(R.id.worksCNI);
         } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
@@ -488,14 +556,18 @@ public class MainActivity extends AppCompatActivity {
             map.put(AFModel.state, AFModel.val_state_offline);
 
             @SuppressLint("HardwareIds")
-            String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID, Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
-            Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase.getCurrentUserId()).child(deviceId).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+            String deviceId = Vars.localDB.retriveStringValue(Vars.PREFS_DEVICE_UNIQUE_ID
+                    , Secure.getString(instance.getContentResolver(), Secure.ANDROID_ID));
+            Vars.appFirebase.getDbStatusReference().child(Vars.appFirebase.getCurrentUserId())
+                    .child(deviceId).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
-                        Toast.makeText(instance, "You are now offline!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(instance, "You are now offline!"
+                                , Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.d(Vars.APPTAG, "ExceptionCallback: " + Objects.requireNonNull(task.getException()).getMessage());
+                        Log.d(Vars.APPTAG, "ExceptionCallback: " +
+                                Objects.requireNonNull(task.getException()).getMessage());
                     }
                 }
             });

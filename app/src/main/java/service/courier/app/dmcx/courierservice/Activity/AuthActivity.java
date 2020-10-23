@@ -358,7 +358,7 @@ public class AuthActivity extends AppCompatActivity {
                             public void ExceptionCallback(String exception) {
                                 if (!exception.equals("")) {
                                     Log.d("APPTAG", "ExceptionCallback: " + exception);
-                                    Toast.makeText(instance, "Authentication Failed!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(instance, "Authentication Failed! "+exception, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
